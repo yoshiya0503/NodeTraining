@@ -6,15 +6,20 @@
 
 var mongo = require('mongoskin');
 var db = mongo.db('localhost:27017/BookAdmin', {safe : true});
-var books = db.collection('books');
+var books = db.collection('Books');
 
 /**
  * 本を新規登録する関数
  * @param {Object} book　登録する本
  * @param {Function} callback
  */
-exports.addBook = function () {
-
+exports.addBook = function (obj, callback) {
+    books.insert(obj, function (err, result) {
+        if(err) throw err;
+        if(result) console.log('[success] insert');
+        if(!result) console.log('[success] insert is failed...');
+        callback(result);
+    });
 };
 
 /**
@@ -22,40 +27,64 @@ exports.addBook = function () {
  * @param {Object} book 編集内容
  * @param {Function} callback
  */
-exports.modifyBook = function () {
-    books.update();
+exports.updateBook = function (obj, callback) {
+    books.update(obj, {$set : {name : 'yoshiyaIto'}}, function (err, result) {
+        if (err) throw err;
+        if (result) console.log('[success] update');
+        if (!result) console.log('[warning] update data is not exist');
+        callback(result);
+    });
 };
 
 /**
  * 本を削除する関数
- * @param {Number}  _id 削除する本のID
+ * @param {Number}  _id 削除する本のkey
  * @param {Function} callback
  */
-exports.deleteBook = function (id, callback) {
-    books.removeById(id, callback); 
+exports.removeBook = function (key) {
+    books.remove(key, function (err, result) {
+        if (err) throw err;
+        if (result) console.log('[success] remove');
+        if (!result) console.log('[warning] remove data is not exist');
+    });
 };
 /**
  * 本を検索する関数
- * @param {Object} 検索条件
- *
+ * @param {Object} key 検索条件キー
+ * @param {Function} callback
  */
-exports.searchBook = function () {
-
+exports.searchBook = function (key, callback) {
+    book.find(key, function (err, result) {
+        if (err) throw err;
+        if (!result) console.log('[warning] no search result');
+        callback(result);
+    }); 
 };
 
 /**
  * 本の情報を全件取得する関数
- * @param {Function} callback
+ * @param {Function} callback result/array
  */
-exports.getAllBooks = function () {
-
+exports.getAllBooks = function (callback) {
+    books.find().toArray(function (err, result) {
+        if (err) throw err;
+        if (!result) console.log('[warning] no find data');
+        console.log('[success] find');
+        callback(result);
+    }); 
 };
 
 /**
  * 指定された本の情報を一件だけ取得する関数
- * @param {Number} _id　本のID
+ * @param {Number} key　本の検索キー
  * @param {Function} callback
  */
-exports.getBook = function () {
-
+exports.getBook = function (key, callback) {
+    books.findOne(key, function (err, result) {
+        if (err) throw err;
+        if (!result) console.log('[warning] no find data');
+        console.log('[success] find one');
+        callback(result);
+    });
 };
+

@@ -1,6 +1,7 @@
 extends layout
 
 block content
+
     h1 書籍管理
     div
         p
@@ -12,10 +13,13 @@ block content
         tr
             for i in index
                 th= i
-        tr
-            for i in index
-                td= i
-            td: a(href='book/detail.html',) 詳細
-            td: a(href='book/modify.html',) 変更
-            td: a(href='#',) 削除
+        
+        for book in books
+            tr
+                td= book.name
+                td= book.author
+                td hoge
+                td: a(href='book/detail.html',) 詳細
+                td: a(href='book/modify.html',) 変更
+                td: a(href='#',) 削除
 
