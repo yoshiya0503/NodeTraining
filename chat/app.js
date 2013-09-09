@@ -4,8 +4,6 @@
  */
 
 var express = require('express');
-var routes = require('./routes');
-var user = require('./routes/user');
 var http = require('http');
 var path = require('path');
 
@@ -14,6 +12,7 @@ var server = http.createServer(app);
 var sio = require('socket.io');
 var io = sio.listen(server);
 var RedisStore = require('connect-redis')(express);
+
 // all environments
 app.set('port', process.env.PORT || 3000);
 app.set('views', __dirname + '/views');
@@ -41,42 +40,33 @@ io.configure(function () {
 var redis = require('redis');
 var client = redis.createClient();
 
-client.on('error', function (err) {
-    throw err;
-});
+var chatHandler = require('./ws/chathandler.js');
 //ログイン画面の表示
 app.get('/', function (req, res) {
     res.render('login');
 });
-
-//チャット画面の表示
+//ルーム画面の表示
 app.post('/', function (req, res) {
     var username = req.body.name;
-    client.lrange('rooms', 0,-1, function (err, data) {
+    client.lrange('rooms', 0, -1, function (err, data) {
         var rooms = [];
-        for (var i=0; i< data.length;i++) {
-            var room = {num : i, name : data[i]};
+        for (var i=0; i < data.length; i++) {
+            var room = {
+                id : (i+1 + data[i]),
+                num : i+1, 
+                name : data[i]
+            };
             rooms.push(room);
         }
-        res.render('room', {username : username, rooms : rooms}); 
+        res.render('toppage', {username : username, rooms : rooms});
     });
 });
 
-client.setnx('global:room:id', 0, redis.print);
-
-io.sockets.on('connection', function (socket) {
-    socket.on('crateRoom', function (data) {
-        client.incr('global:room:id');
-        client.rpush('rooms',data);
-        client.get('global:room:id', function (err, num) {
-            var room = {
-                num : num,
-                name : data
-            };
-            socket.emit('showRoom', room);
-        });
-    });
+app.get('/:roomid', function (req, res) {
+    res.render('room');
 });
+
+chatHandler.connectSocket(io);
 
 server.listen(app.get('port'), function(){
     console.log('Express server listening on port ' + app.get('port'));

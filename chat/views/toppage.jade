@@ -1,0 +1,26 @@
+extends layout
+
+block content
+    
+    h1 部屋hoge
+    h3 #{username} さん　いらっしゃい
+        input(type='button', id='room', value="部屋の作成")
+    div#enter
+        for room in rooms
+            p: a(href=room.id) #{room.num}:#{room.name}
+    script.
+        var socket = io.connect();
+        socket.on('showRoom', function (data) {
+            var str = data.num + ':' + data.name;
+            var url = data.num + data.name;
+            $("#enter").append("<p><a href=" + url +">" + str + "</a></p>");
+        });
+        (function(){
+            var input_button = document.getElementById("room");
+            var input_return = document.getElementById("enter");
+            input_button.onclick = function (){
+                var result = prompt('部屋の作成','');
+                socket.emit('crateRoom', result);
+            };    
+        })();
+
