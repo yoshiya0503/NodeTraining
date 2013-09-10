@@ -1,0 +1,23 @@
+extends layout
+
+block content
+    h1 書籍追加
+    form(action='/index.html', method='post')
+        div ISBN 
+            input(type='text', name='isbn')
+        div 書籍名
+            input(type='text', name='name')
+        div 著者名
+            input(type='text', name='author')
+        div タグ
+            input(type='text', name='tag')
+        div 値段
+            input(type='text', name='price')
+        div 購入日
+            input(type='text', name='purchace_date')
+        div 読了日
+            input(type='text', name='finish_data')
+        div コメント
+            textarea(name='comment', rows='3', cols='50')
+        div
+            input(type='submit', value='登録')

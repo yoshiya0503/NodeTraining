@@ -1,0 +1,21 @@
+extends layout
+
+block content
+    h1 書籍管理
+    div
+        p
+            a(href='book/add.html')書籍追加
+        p
+            a(href='book/search.thml')書籍検索
+    index = ['書籍名','タグ','購入日','読了日','','','']
+    table
+        tr
+            for i in index
+                th= i
+        tr
+            for i in index
+                td= i
+            td: a(href='book/detail.html',) 詳細
+            td: a(href='book/modify.html',) 変更
+            td: a(href='#',) 削除
+
