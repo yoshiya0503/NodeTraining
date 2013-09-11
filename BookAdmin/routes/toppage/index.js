@@ -6,8 +6,6 @@
 var bookService = require('../../models/BookAdminService.js');
 exports.getTopPage = function (req, res) {
     bookService.getAllBooks(function (result) {
-        var util = require('util');
-        console.log(util.inspect(result));
         res.render('toppage', {books : result});
     }); 
-}
+};

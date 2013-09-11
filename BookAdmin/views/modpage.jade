@@ -2,22 +2,22 @@ extends layout
 
 block content
     h1 書籍情報編集
-    form(action='/index.html', method='post')
+    form(action='/book/modify_result.html', method='post')
         div ISBN 
-            input(type='text', name='isbn')
+            input(type='text', name='isbn', value=book.isbn)
         div 書籍名
-            input(type='text', name='name')
+            input(type='text', name='name', value=book.name)
         div 著者名
-            input(type='text', name='author')
+            input(type='text', name='author', value=book.author)
         div タグ
-            input(type='text', name='tag')
+            input(type='text', name='tag', value=book.tag)
         div 値段
-            input(type='text', name='price')
+            input(type='text', name='price', value=book.price)
         div 購入日
-            input(type='text', name='purchace_date')
+            input(type='text', name='purchase_date', value=book.purchase_date)
         div 読了日
-            input(type='text', name='finish_data')
+            input(type='text', name='finish_date', value=book.finish_date)
         div コメント
-            textarea(name='comment', rows='3', cols='50')
+            textarea(name='comment', rows='3', cols='50') #{book.comment}
         div
             input(type='submit', value='編集')

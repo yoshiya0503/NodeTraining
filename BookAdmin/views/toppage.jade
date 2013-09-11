@@ -7,19 +7,26 @@ block content
         p
             a(href='book/add.html')書籍追加
         p
-            a(href='book/search.thml')書籍検索
+            a(href='book/search.html')書籍検索
     index = ['書籍名','タグ','購入日','読了日','','','']
-    table
+    table(border='1')
         tr
             for i in index
                 th= i
-        
         for book in books
             tr
-                td= book.name
+                td= book.isbn
                 td= book.author
-                td hoge
-                td: a(href='book/detail.html',) 詳細
-                td: a(href='book/modify.html',) 変更
-                td: a(href='#',) 削除
+                td= book.purchase_date
+                td= book.finish_date
+                bookId = book.isbn
+                td: form(method='get',action='/book/detail.html')
+                        input(type='hidden',name='name', value=book.name)
+                        input(type='submit', value='詳細')
+                td: form(action='/book/modify.html?name=',)
+                        input(type='hidden',name='name', value=book.name)
+                        input(type='submit', value='変更')
+                td: form(action='/book/delete_result.html',method='post',id='del')
+                        input(type='hidden',name='isbn', value=book.isbn)
+                        input(type='submit', value='削除', onClick='confirm("削除しますか？")')
 

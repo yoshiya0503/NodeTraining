@@ -24,11 +24,12 @@ exports.addBook = function (obj, callback) {
 
 /**
  * 本を編集する関数
- * @param {Object} book 編集内容
+ * @param {Object} key 指定キー
+ * @param {Object} obj 編集内容
  * @param {Function} callback
  */
-exports.updateBook = function (obj, callback) {
-    books.update(obj, {$set : {name : 'yoshiyaIto'}}, function (err, result) {
+exports.updateBook = function (key, obj, callback) {
+    books.update(key, {$set : obj}, function (err, result) {
         if (err) throw err;
         if (result) console.log('[success] update');
         if (!result) console.log('[warning] update data is not exist');
@@ -54,11 +55,32 @@ exports.removeBook = function (key) {
  * @param {Function} callback
  */
 exports.searchBook = function (key, callback) {
-    book.find(key, function (err, result) {
-        if (err) throw err;
-        if (!result) console.log('[warning] no search result');
-        callback(result);
-    }); 
+    if (!key.purchase_date_start && !key.purchase_date_end) {
+        books.find(key).toArray(function (err, result) {
+            if (err) throw err;
+            if (!result) console.log('[warning] no search result');
+            callback(result);
+        });
+    } else if (key.purchase_date_start && key.purchase_date_end) {
+        books.find({purchase_date : {$gt : key.purchase_date_start , $lte : key.purchase_date_end}})
+        .toArray(function (err, result) {
+            if (err) throw err;
+            if (!result) console.log('[warning] no search result');
+            callback(result);
+        });
+    } else if (key.purchase_date_start) {
+        books.find({purchase_date : {$gte : key.purchase_date_start}}).toArray(function (err, result) {
+            if (err) throw err;
+            if (!result) console.log('[warning] no search result');
+            callback(result);
+        });
+    } else if (key.purchase_date_end) {
+        books.find({purchase_date : {$lte : key.purchase_date_end}}).toArray(function (err, result) {
+            if (err) throw err;
+            if (!result) console.log('[warning] no search result');
+            callback(result);
+        });
+    }
 };
 
 /**

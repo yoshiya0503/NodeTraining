@@ -3,18 +3,45 @@ extends layout
 block content
     h1 書籍検索
         
-    form(action='../index.html',method='post')
+    form(action='/book/search_result.html',method='post')
         div ISBN
-            input(type='text', name='isbn')
+            input(type='text', name='isbn',value=book.isbn)
         div 書籍名
-            input(type='text', name='name')
+            input(type='text', name='name',value=book.name)
         div 著者
-            input(type='text', name='author')
+            input(type='text', name='author',value=book.author)
         div タグ
-            input(type='text', name='tag')
+            input(type='text', name='tag',value=book.tag)
         div 購入日
-            input(type='text', name='purchase_data_start')
+            input(type='text', name='purchase_date_start')
             ~
-            input(type='text', name='purchase_data_end')
+            input(type='text', name='purchase_date_end')
         div
             input(type='submit', value='検索')
+
+    a(href='/index.html') トップ画面へ戻る
+    if books
+        h2 検索結果
+        index = ['書籍名','タグ','購入日','読了日','','','']
+        table(border='1')
+            tr
+                for i in index
+                    th= i
+        
+            for book in books
+                tr
+                    td= book.name
+                    td= book.tag
+                    td= book.purchase_date
+                    td= book.finish_date
+                    td: form(method='get',action='/book/detail.html')
+                            input(type='hidden',name='name', value=book.name)
+                            input(type='submit', value='詳細')
+                    td: form(action='/book/modify.html?name=',method='get')
+                            input(type='hidden',name='name', value=book.name)
+                            input(type='submit', value='変更')
+                    td: form(action='/book/delete_result.html',method='post')
+                            input(type='hidden',name='isbn', value=book.isbn)
+                            input(type='submit', value='削除', onClick='confirm("削除していいですか？")')
+           
+
