@@ -1,14 +1,58 @@
 extends layout
 
 block content
-    h1 チャットルーム
-    div ここにテキストボックスinput 
-    div#text
-
-    script.
-        var socket = io.connect();
-        socket.on('getMessage', function (data) {
-            $('text').append('<p>' + data +'</p>');
-        });
-        
     
+    script.            
+        $(function () {
+            var path = location.pathname;
+            var socket = io.connect();
+            socket.emit('init', path);
+            $('#send').click(function () {
+                var message = $('#message').val();
+                var username = $('#username').text();
+                var data = {
+                    path : location.pathname,
+                    message : message,
+                    username : username
+                };
+                socket.emit('createMessage', data);
+            });
+
+            $('#exit').click(function () {
+
+            });
+            
+            socket.on('showMessage', function (data) {
+                $('#list').prepend($('<dt>' + new Date() + '</dt><dd>' + data + '</dd>'));
+            });
+
+            socket.on('exitMessage', function (data) {
+                $('#list').prepend($('<dt>' + new Date() + '</dt><dd style="color: red">' + data + '</dd>'));
+            });
+            
+            socket.on('enterMessage', function (data) {
+                $('#list').prepend($('<dt>' + new Date() + '</dt><dd style="color: green">' + data + '</dd>'));
+            });
+
+            socket.on('showUserNumber', function (data) {
+                $('h2#user').text('現在の参加人数: '+ data);
+            });
+
+            socket.on('showHistory', function (data) {
+                for (var i =0; i< data.length; i++) {    
+                    $('#list').prepend($('<dt>' + new Date() + '</dt><dd>' + data[i] + '</dd>'));
+                }
+            })
+        });
+    
+    h1 チャットルーム
+    h2#username #{username}
+    h2#user 現在の参加人数 0人
+    p: a(href= '/') 退室
+    p: a(href='/logout/logout') ログアウト
+    div
+        input(type='text',name='message', id='message')
+        button(id='send')送信
+    dl(id='list')
+
+

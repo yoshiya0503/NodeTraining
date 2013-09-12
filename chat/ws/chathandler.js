@@ -6,14 +6,18 @@
 
 var chatService = require('../models/chatService.js');
 
-exports.connectSocket = function (io) {
+exports.connectSockets = function (io) {
     io.sockets.on('connection', function (socket) {
         createRoom(socket);
-        sendMessage(socket);
+        enterRoom(socket, function (socket, path) {
+            socket.join(path);
+            sendMessage(socket, path);
+            exitRoom(socket, path);
+        });
     });
 };
 
-function createRoom(socket) {    
+function createRoom(socket) { 
     socket.on('crateRoom', function (data) {
         chatService.incrementRoom();
         chatService.addRoom(data);
@@ -28,9 +32,41 @@ function createRoom(socket) {
     });
 }
 
-function sendMessage(socket) {
+function sendMessage(socket, path) {
     socket.on('createMessage', function (data) {
-        socket.emit('showMessage', data);
-        socket.broadcast.emit('showMessage', data);
+        chatService.setChatHistory(data.path, data.message, data.username);
+        socket.to(path).emit('showMessage',  (data.username + ':' + data.message));
+        socket.to(path).broadcast.emit('showMessage', data.username + ':' + data.message);
     });
+}
+
+function enterRoom(socket, callback) {
+    socket.on('init', function (path) {
+        chatService.getChatHistory(path, function (data) {
+            socket.to(path).emit('showHistory',data);
+        });
+        chatService.incrementUser(path);
+        console.log(path);
+        chatService.getUserNumber(path, function (data) {
+            socket.to(path).emit('showUserNumber', data);
+            socket.to(path).broadcast.emit('showUserNumber', data);
+            socket.to(path).broadcast.emit('enterMessage', '一人入室しました');
+            callback(socket, path);
+        });
+    });
+}
+
+function exitRoom(socket, path) {
+    socket.on('disconnect', function () {
+        socket.to(path).broadcast.emit('exitMessage', '一人消えた!!!');
+        chatService.decrementUser(path);
+        chatService.getUserNumber(path, function (data) {
+            socket.to(path).broadcast.emit('showUserNumber', data);
+            if (data === '0') {
+                chatService.delRoom(path, function (hoge) {
+                    socket.broadcast.emit('deleteRoom',path);
+                });
+            }
+        });
+    }); 
 }

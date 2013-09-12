@@ -12,7 +12,7 @@ var server = http.createServer(app);
 var sio = require('socket.io');
 var io = sio.listen(server);
 var RedisStore = require('connect-redis')(express);
-
+var _ = require('underscore');
 // all environments
 app.set('port', process.env.PORT || 3000);
 app.set('views', __dirname + '/views');
@@ -41,20 +41,39 @@ var redis = require('redis');
 var client = redis.createClient();
 
 var chatHandler = require('./ws/chathandler.js');
+var chatService = require('./models/chatService.js');
 //ログイン画面の表示
 app.get('/', function (req, res) {
-    res.render('login');
+    if (!req.session.username) {
+        res.render('login');
+    } else {
+        client.lrange('rooms', 0, -1, function (err, data) {
+            var rooms = [];
+            for (var i=0; i < data.length; i++) {
+                var key = (i+1 + data[i]);
+                var room = {
+                    id : key,
+                    num : i+1, 
+                    name : data[i],
+                };
+                rooms.push(room);
+            }
+            res.render('toppage', {username : req.session.username, rooms : rooms});
+        });   
+    }
 });
 //ルーム画面の表示
 app.post('/', function (req, res) {
     var username = req.body.name;
+    req.session.username = username;
     client.lrange('rooms', 0, -1, function (err, data) {
         var rooms = [];
         for (var i=0; i < data.length; i++) {
+            var key = (i+1 + data[i]);
             var room = {
-                id : (i+1 + data[i]),
+                id : key,
                 num : i+1, 
-                name : data[i]
+                name : data[i],
             };
             rooms.push(room);
         }
@@ -63,10 +82,19 @@ app.post('/', function (req, res) {
 });
 
 app.get('/:roomid', function (req, res) {
-    res.render('room');
+    if (req.session.username) {
+        res.render('room', {username : req.session.username});
+    } else {
+        res.redirect('/');
+    }
 });
 
-chatHandler.connectSocket(io);
+app.get('/logout/logout', function (req, res) {
+    req.session.destroy();
+    res.redirect('/');
+});
+
+chatHandler.connectSockets(io);
 
 server.listen(app.get('port'), function(){
     console.log('Express server listening on port ' + app.get('port'));

@@ -2,18 +2,24 @@ extends layout
 
 block content
     
-    h1 部屋hoge
-    h3 #{username} さん　いらっしゃい
+    h1 チャットルーム一覧
+    h2 ログインユーザ
+    h3 #{username}
         input(type='button', id='room', value="部屋の作成")
     div#enter
         for room in rooms
-            p: a(href=room.id) #{room.num}:#{room.name}
+            p(id=room.id): a(href=room.id) #{room.num}:#{room.name}
     script.
         var socket = io.connect();
         socket.on('showRoom', function (data) {
             var str = data.num + ':' + data.name;
             var url = data.num + data.name;
-            $("#enter").append("<p><a href=" + url +">" + str + "</a></p>");
+            $("#enter").prepend("<p id="+ url +"><a href=" + url +">" + str + "</a></p>");
+        });
+
+        socket.on('deleteRoom', function (path) {
+            var str = path.substring(1);   
+            $("#" + str).remove();
         });
         (function(){
             var input_button = document.getElementById("room");
